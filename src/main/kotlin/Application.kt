@@ -1,6 +1,7 @@
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.viartemev.ktor.flyway.FlywayFeature
 import controllers.ContactController
+import controllers.MessageController
 import db.DatabaseFactory
 import io.ktor.application.*
 import io.ktor.features.*
@@ -11,6 +12,7 @@ import io.ktor.util.*
 import org.jetbrains.exposed.sql.Database
 import org.slf4j.event.Level
 import routes.contactRoutes
+import routes.messageRoutes
 
 fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
 
@@ -41,9 +43,11 @@ fun Application.module(testing: Boolean = false) {
     }
 
     val contactController = ContactController()
+    val messageController = MessageController()
 
     routing {
         contactRoutes(contactController)
+        messageRoutes(messageController)
     }
 }
 

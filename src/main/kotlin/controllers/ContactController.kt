@@ -8,37 +8,39 @@ import org.jetbrains.exposed.sql.*
 
 class ContactController {
     suspend fun addContact(contact: NewContact): Contact {
-        var id = 0
-        dbQuery {
-            id = (Contacts.insert {
-                it[name] = contact.name
-                it[email] = contact.email
-                it[created] = System.currentTimeMillis()
-            } get Contacts.id)
+        if (getContact(contact.email) != null) {
+            throw Exception("Contact already exists")
         }
 
-        return getContact(id)!!
+        dbQuery {
+            Contacts.insert {
+                it[email] = contact.email
+                it[name] = contact.name
+                it[created] = System.currentTimeMillis()
+            }
+        }
+
+        return getContact(contact.email)!!
     }
 
     suspend fun getAllContacts(): List<Contact> = dbQuery {
         Contacts.selectAll().map { toContact(it) }
     }
 
-    suspend fun getContact(id: Int): Contact? = dbQuery {
+    suspend fun getContact(email: String): Contact? = dbQuery {
         Contacts.select {
-            Contacts.id eq id
+            Contacts.email eq email
         }.mapNotNull {
             toContact(it)
         }.singleOrNull()
     }
 
-    suspend fun deleteContact(id: Int): Boolean = dbQuery {
-        Contacts.deleteWhere { Contacts.id eq id } > 0
+    suspend fun deleteContact(email: String): Boolean = dbQuery {
+        Contacts.deleteWhere { Contacts.email eq email } > 0
     }
 
     private fun toContact(row: ResultRow): Contact =
         Contact(
-            id = row[Contacts.id],
             name = row[Contacts.name],
             email = row[Contacts.email],
             created = row[Contacts.created],

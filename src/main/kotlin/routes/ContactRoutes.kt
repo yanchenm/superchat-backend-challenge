@@ -13,26 +13,31 @@ fun Route.contactRoutes(contactController: ContactController) {
         get {
             call.respond(contactController.getAllContacts())
         }
-        get("{id}") {
-            val id = call.parameters["id"]?.toInt() ?: return@get call.respondText(
-                "Missing or invalid id",
+        get("{email}") {
+            val email = call.parameters["email"] ?: return@get call.respondText(
+                "Missing or invalid email",
                 status = HttpStatusCode.BadRequest
             )
 
-            val contact = contactController.getContact(id) ?: return@get call.respond(HttpStatusCode.NotFound)
+            val contact = contactController.getContact(email) ?: return@get call.respond(HttpStatusCode.NotFound)
             call.respond(contact)
         }
         post {
             val contact = call.receive<NewContact>()
-            call.respond(HttpStatusCode.Created, contactController.addContact(contact))
+            try {
+                val created = contactController.addContact(contact)
+                call.respond(HttpStatusCode.Created, created)
+            } catch (e: Exception) {
+                call.respondText(e.message ?: "error", status = HttpStatusCode.InternalServerError)
+            }
         }
-        delete("{id}") {
-            val id = call.parameters["id"]?.toInt() ?: return@delete call.respondText(
-                "Missing or invalid id",
+        delete("{email}") {
+            val email = call.parameters["email"] ?: return@delete call.respondText(
+                "Missing or invalid email",
                 status = HttpStatusCode.BadRequest
             )
 
-            val deleted = contactController.deleteContact(id)
+            val deleted = contactController.deleteContact(email)
             if (deleted) call.respond(HttpStatusCode.OK) else call.respond(HttpStatusCode.NotFound)
         }
     }
