@@ -9,17 +9,19 @@ import org.jetbrains.exposed.sql.*
 
 class MessageController {
 
+    private val bitcoinController = BitcoinController()
     private val contactController = ContactController()
 
     suspend fun sendMessage(email: String, message: String): Message {
         val recipient = contactController.getContact(email) ?: throw Exception("Recipient does not exist")
+        val parsedMessage = parseMessageBody(recipient, message)
         var id: Int? = -1
 
         dbQuery {
             id = Messages.insert {
                 it[type] = MessageType.SENT
                 it[contact] = email
-                it[body] = parseMessageBody(recipient, message)
+                it[body] = parsedMessage
                 it[sent] = System.currentTimeMillis()
             } get Messages.id
         }
@@ -47,12 +49,18 @@ class MessageController {
         ).map { toMessage(it) }
     }
 
-    private fun parseMessageBody(contact: Contact, message: String): String {
+    private suspend fun parseMessageBody(contact: Contact, message: String): String {
         val placeholderPattern = "\\$\\{(\\S+)}".toRegex()
+        val btcPrice = try {
+            bitcoinController.getBtcPrice().toString()
+        } catch (e: Exception) {
+            0.00.toString()
+        }
+
         return message.replace(placeholderPattern) {
             when (it.groupValues[1]) {
                 "name" -> contact.name
-                "btc" -> 123.toString()
+                "btc" -> btcPrice
                 else -> it.value
             }
         }

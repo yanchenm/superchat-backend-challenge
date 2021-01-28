@@ -40,5 +40,6 @@ dependencies {
     implementation "com.zaxxer:HikariCP:$hikari_version"
     implementation "com.viartemev:ktor-flyway-feature:$ktor_flyway_feature_version"
     implementation "org.flywaydb:flyway-core:$flyway_version"
+    implementation "khttp:khttp:$khttp_version"
     testImplementation "io.ktor:ktor-server-tests:$ktor_version"
 }
