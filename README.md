@@ -88,7 +88,7 @@ functionality:
 
 - Request body:
     - Wrap any placeholders in `${ }`.
-    - Currently supported placeholders are `name` and `btc`
+    - Currently supported placeholders are `name`, `email`, and `btc`
 
 ```json
 {
