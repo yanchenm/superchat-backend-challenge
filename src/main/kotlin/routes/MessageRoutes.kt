@@ -21,6 +21,15 @@ fun Route.messageRoutes(messageController: MessageController) {
             )
             call.respond(messageController.getAllMessagesForContact(email))
         }
+        post {
+            val message = call.receive<NewMessage>()
+            try {
+                val sent = messageController.sendMessage(message.contact, message.body)
+                call.respond(HttpStatusCode.Created, sent)
+            } catch (e: Exception) {
+                call.respondText(e.message ?: "error", status = HttpStatusCode.InternalServerError)
+            }
+        }
     }
     route("/message") {
         get("{id}") {
@@ -31,15 +40,6 @@ fun Route.messageRoutes(messageController: MessageController) {
 
             val message = messageController.getMessage(id) ?: return@get call.respond(HttpStatusCode.NotFound)
             call.respond(message)
-        }
-        post {
-            val message = call.receive<NewMessage>()
-            try {
-                val sent = messageController.sendMessage(message.contact, message.body)
-                call.respond(HttpStatusCode.Created, sent)
-            } catch (e: Exception) {
-                call.respondText(e.message ?: "error", status = HttpStatusCode.InternalServerError)
-            }
         }
     }
     route("/receive") {
