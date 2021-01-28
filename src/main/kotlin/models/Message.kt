@@ -23,3 +23,5 @@ object Messages : Table() {
 data class Message(val id: Int, val contact: String, val type: MessageType, val body: String, val sent: Long)
 
 data class NewMessage(val contact: String, val body: String)
+
+data class ExternalMessage(val name: String, val email: String, val message: String)

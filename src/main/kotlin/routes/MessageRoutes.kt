@@ -6,6 +6,7 @@ import io.ktor.http.*
 import io.ktor.request.*
 import io.ktor.response.*
 import io.ktor.routing.*
+import models.ExternalMessage
 import models.NewMessage
 
 fun Route.messageRoutes(messageController: MessageController) {
@@ -39,6 +40,13 @@ fun Route.messageRoutes(messageController: MessageController) {
             } catch (e: Exception) {
                 call.respondText(e.message ?: "error", status = HttpStatusCode.InternalServerError)
             }
+        }
+    }
+    route("/receive") {
+        post {
+            val message = call.receive<ExternalMessage>()
+            messageController.receiveMessage(message)
+            call.respond(HttpStatusCode.OK, message)
         }
     }
 }
